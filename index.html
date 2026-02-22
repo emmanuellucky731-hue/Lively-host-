@@ -1,4 +1,130 @@
-const CACHE_NAME = 'lively-host-v1';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NexLink</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold:#d4a843;
+      --gold2:#f0c866;
+      --dark:#080808;
+      --cream:#f0ebe0;
+      --cream2:#b8b0a0;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--dark);
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .setup {
+      text-align:center;
+    }
+    .logo {
+      font-family:'Playfair Display';
+      font-size:64px;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .tagline {
+      font-size:11px;
+      letter-spacing:6px;
+      color:var(--cream2);
+      margin:20px 0 40px;
+    }
+    .btn {
+      padding:16px 32px;
+      border:none;
+      border-radius:4px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+    }
+    .hidden { display:none; }
+  </style>
+</head>
+
+<body>
+
+<div class="setup" id="setup">
+  <div class="logo">NexLink</div>
+  <div class="tagline">CONNECT · LAUGH · KNOW · EARN</div>
+  <button class="btn" id="googleBtn">Sign in with Google</button>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithRedirect,
+    getRedirectResult,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import {
+    getDatabase,
+    ref,
+    set
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHy5VoSosMX0TcdZ2J43YgGQzxb6d6B8Y",
+    authDomain: "nexlink-a0b9c.firebaseapp.com",
+    databaseURL: "https://nexlink-a0b9c-default-rtdb.firebaseio.com",
+    projectId: "nexlink-a0b9c",
+    storageBucket: "nexlink-a0b9c.appspot.com",
+    messagingSenderId: "472491790040",
+    appId: "1:472491790040:web:e86343d55852c275fd51ad"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  const db = getDatabase(app);
+
+  const setup = document.getElementById("setup");
+  const googleBtn = document.getElementById("googleBtn");
+
+  googleBtn.addEventListener("click", () => {
+    signInWithRedirect(auth, provider);
+  });
+
+  getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) {
+      const user = result.user;
+      await set(ref(db, "users/" + user.uid), {
+        uid: user.uid,
+        name: user.displayName,
+        email: user.email,
+        photo: user.photoURL,
+        createdAt: new Date().toISOString()
+      });
+    }
+  }).catch(error => {
+    alert(error.message);
+  });
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      setup.classList.add("hidden");
+    } else {
+      setup.classList.remove("hidden");
+    }
+  });
+</script>
+
+</body>
+</html>const CACHE_NAME = 'lively-host-v1';
 const urlsToCache = ['/', '/index.html'];
 
 self.addEventListener('install', event => {
@@ -11,4 +137,5 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => response || fetch(event.request))
   );
+
 });
